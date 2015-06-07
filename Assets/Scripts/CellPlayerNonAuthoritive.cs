@@ -14,12 +14,16 @@ public class CellPlayerNonAuthoritive : MonoBehaviour {
         theRigidbody2D = GetComponent<Rigidbody2D>();
     }
 
+    void Start() {
+        if (theNetworkView.isMine) {
+            Camera.main.GetComponent<CameraMovement>().follow = this.transform;
+        }
+    }
+
     void Update() {
         float scale = 2 * Mathf.Sqrt(size / Mathf.PI);
         transform.localScale = new Vector3(scale, scale);
         velocity = 5f / Mathf.Log(size / 2f, 5f);
-
-        Debug.Log(velocity);
     }
 
 	void FixedUpdate () {
@@ -30,7 +34,6 @@ public class CellPlayerNonAuthoritive : MonoBehaviour {
         if (theNetworkView.isMine) {
             InputMovement();
         }
-
 	}
 
     void InputMovement() {

@@ -1,0 +1,10 @@
+High Priority:
+- Object Pool for food
+- RPC create food on all players over net (but dont append NetworkView on food!)
+- Create logic to eat food/other cells
+
+Middle Priority:
+- 
+
+Low Priority:
+- State Sync of Cells

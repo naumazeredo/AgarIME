@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
 public class Food : MonoBehaviour {
-	void OnEnable() {
-        GetComponent<SpriteRenderer>().color = new Color(Random.value, Random.value, Random.value);
-	}
+    [SerializeField]
+    private float size = 1f;
+
+    public void SetColor(Color color) {
+        GetComponent<SpriteRenderer>().color = color;
+    }
 }
