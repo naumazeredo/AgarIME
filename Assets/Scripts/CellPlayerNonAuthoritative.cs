@@ -12,14 +12,6 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     Rigidbody2D theRigidbody2D;
     Collider2D theCollider2D;
 
-    // Networking synchronization
-    bool netInitialized = false;
-    float lastSyncTime = 0f;
-    float syncDelay = 0f;
-    float syncTime = 0f;
-    Vector3 syncStartPosition = Vector3.zero;
-    Vector3 syncEndPosition = Vector3.zero;
-
     void Awake() {
         theNetworkView = GetComponent<NetworkView>();
         theRigidbody2D = GetComponent<Rigidbody2D>();
@@ -111,8 +103,6 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     }
 
     void SyncMovement() {
-        syncTime += Time.fixedDeltaTime;
-        theRigidbody2D.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
     }
 
     void OnTriggerStay2D(Collider2D col) {
@@ -148,22 +138,8 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncVelocity);
 
-            syncTime = 0f;
-            if (!netInitialized) {
-                theRigidbody2D.position = syncPosition;
-                theRigidbody2D.velocity = syncVelocity;
-
-                syncDelay = 1f;
-                syncStartPosition = syncPosition;
-                syncEndPosition = syncPosition;
-                netInitialized = true;
-            } else {
-                syncDelay = Time.time - lastSyncTime;
-
-                syncStartPosition = theRigidbody2D.position + (Vector2)(syncVelocity) * syncDelay;
-                syncEndPosition = syncPosition;
-            }
-            lastSyncTime = Time.time;
+            theRigidbody2D.position = syncPosition;
+            theRigidbody2D.velocity = syncVelocity;
         }
     }
 

@@ -1,6 +1,7 @@
 High Priority:
 - Camera zoom out with cell size
-- Improve client-side prediction
+- Client-side prediction
+- FIX disconnecting causing issues!
 
 Middle Priority:
 - Split/'attack' logic
@@ -13,7 +14,6 @@ Low Priority:
 Done:
 - Create logic to eat food/other cells OK
 - State Sync of Cells
-- Client-side prediction / Movement smoothing
 - FIX smaller eating bigger
 
 Suspended:
