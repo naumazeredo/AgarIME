@@ -3,7 +3,7 @@
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NetworkView))]
 [RequireComponent(typeof(Size))]
-public class CellPlayerNonAuthoritive : MonoBehaviour {
+public class CellPlayerNonAuthoritative : MonoBehaviour {
     Size theSize;
     float velocity = 5f;
 
