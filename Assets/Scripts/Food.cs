@@ -7,8 +7,8 @@ public class Food : MonoBehaviour {
     }
 
     void OnEnable() {
-        float x = NetworkManager.arenaSize.x;
-        float y = NetworkManager.arenaSize.y;
+        float x = NetworkManager.instance.arenaSize.x;
+        float y = NetworkManager.instance.arenaSize.y;
         float r = (transform.position.x + x) / (2 * x);
         float g = (transform.position.y + y) / (2 * y);
         float b = transform.position.z;

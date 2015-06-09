@@ -23,4 +23,15 @@ public class Size : MonoBehaviour {
         if (eaten.OnGetEaten != null)
             eaten.OnGetEaten();
     }
+
+    void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
+        float syncSize = 0f;
+        if (stream.isWriting) {
+            syncSize = size;
+            stream.Serialize(ref syncSize);
+        } else {
+            stream.Serialize(ref syncSize);
+            size = syncSize;
+        }
+    }
 }

@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using System.Net;
 
 public class NetworkManager : MonoBehaviour {
     static public NetworkManager instance;
 
-    public string ipAddress = "127.0.0.1";
+    //public string ipAddress = "127.0.0.1";
 
     private const string gameTypeName = "AgarIMEio";
     private const string gameName = "RoomIME";
@@ -18,12 +20,18 @@ public class NetworkManager : MonoBehaviour {
     private GameObject player = null;
 
     // Arena
-    public static Vector2 arenaSize = new Vector2(40f, 40f);
+    public Vector2 arenaSize = new Vector2(80f, 80f);
 
     // Food managing
-    public int foodMaximum = 100;
+    public int foodMaximum = 400;
     public int foodCount = 0;
     private float timer = 0f;
+
+    // UI
+    public Canvas loginCanvas;
+    public InputField playerName;
+    public Text errorMessage;
+    public InputField ipAddress;
 
     void Awake() {
         instance = this;
@@ -31,21 +39,27 @@ public class NetworkManager : MonoBehaviour {
 
     void Start() {
         // TODO(naum): Don't use this!
-        ChangeServerIpAddress("127.0.0.1");
+        //ChangeServerIpAddress("127.0.0.1");
 
         // TODO(naum): Server build (-nographics, -batchmode, -executeMethod NetworkManager.StartServer)
     }
 
-    public void ChangeServerIpAddress(string ip) {
-        ipAddress = ip;
-        MasterServer.ipAddress = ipAddress;
+    //public void ChangeServerIpAddress(string ip) {
+    public void ChangeServerIpAddress() {
+        //ipAddress.text = ip;
+        MasterServer.ipAddress = ipAddress.text;
     }
 
-    private void StartServer() {
-        Network.InitializeServer(32, 25005, !Network.HavePublicAddress());
+    public void StartServer() {
+        if (!ValidatePlayerName())
+            return;
+        if (!ValidateIpAddress())
+            return;
+        //Network.InitializeServer(32, 25005, !Network.HavePublicAddress());
+        Network.InitializeServer(32, 25005, false);
         //MasterServer.dedicatedServer = true;
         MasterServer.RegisterHost(gameTypeName, gameName);
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < foodMaximum; ++i)
             CreateFood();
     }
 
@@ -55,15 +69,27 @@ public class NetworkManager : MonoBehaviour {
         }
     }
 
-    private void JoinServer() {
+    public void JoinServer() {
+        if (!ValidatePlayerName())
+            return;
+        if (!ValidateIpAddress())
+            return;
         hostList = null;
         MasterServer.RequestHostList(gameTypeName);
         connecting = true;
         connected = false;
+        Debug.Log("Joining Server!");
     }
 
     void Update() {
-        if (connecting && hostList != null) {
+        if (!Network.isClient && !Network.isServer) {
+            ShowLoginUI();
+        } else {
+            HideLoginUI();
+        }
+
+        if (connecting && hostList != null && hostList.Length > 0) {
+            Debug.Log("Connecting and received hostList");
             Network.Connect(hostList[0]);
             connecting = false;
         }
@@ -71,14 +97,7 @@ public class NetworkManager : MonoBehaviour {
         if (connected && Input.GetKeyDown(KeyCode.Space) && player == null) {
             // TODO(naum): Object pool cells
             // TODO(naum): Calculate best position to instantiate
-            player = Network.Instantiate(
-                cell,
-                //Vector3.zero,
-                new Vector3(
-                    Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
-                    Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
-                    Random.value),
-                Quaternion.identity, 0) as GameObject;
+            SpawnPlayer();
         }
 
         if (connected && Network.isServer) {
@@ -125,6 +144,7 @@ public class NetworkManager : MonoBehaviour {
         Network.DestroyPlayerObjects(netplayer);
     }
 
+    /*
     void OnGUI() {
         if (!Network.isClient && !Network.isServer) {
             if (GUI.Button(new Rect(10, 10, 100, 50), "Start Server"))
@@ -134,6 +154,7 @@ public class NetworkManager : MonoBehaviour {
                 JoinServer();
         }
     }
+    */
 
     void CreateFood() {
         Network.Instantiate(
@@ -144,5 +165,49 @@ public class NetworkManager : MonoBehaviour {
                 Random.value),
             Quaternion.identity, 0);
         foodCount++;
+    }
+
+    public void ShowLoginUI() {
+        loginCanvas.gameObject.SetActive(true);
+    }
+
+    public void HideLoginUI() {
+        loginCanvas.gameObject.SetActive(false);
+    }
+
+    bool ValidatePlayerName() {
+        // TODO(naum): Avoid name collisions
+        if (playerName.text.Length == 0)
+            errorMessage.text = "Player name should not be empty!";
+        else
+            HideErrorMessage();
+        return playerName.text.Length > 0;
+    }
+
+    void HideErrorMessage() {
+        errorMessage.text = "";
+    }
+
+    void SpawnPlayer() {
+        player = Network.Instantiate(
+            cell,
+            //Vector3.zero,
+            new Vector3(
+                Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
+                Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
+                Random.value),
+            Quaternion.identity, 0) as GameObject;
+        player.GetComponent<CellPlayerNonAuthoritative>().SetName(playerName.text);
+    }
+
+    public bool ValidateIpAddress() {
+        IPAddress ip;
+        bool valid = IPAddress.TryParse(ipAddress.text, out ip);
+        if (valid) {
+            ChangeServerIpAddress();
+        } else {
+            errorMessage.text = "Incorrect ip!";
+        }
+        return valid;
     }
 }

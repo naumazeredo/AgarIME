@@ -1,16 +1,20 @@
 High Priority:
-- UI
 - Camera zoom out with cell size
+- Improve client-side prediction
 
 Middle Priority:
 - Split/'attack' logic
+- Share player/cell name
+- UI
 
 Low Priority:
-- Client-side prediction / Movement smoothing
+- 
 
 Done:
 - Create logic to eat food/other cells OK
 - State Sync of Cells
+- Client-side prediction / Movement smoothing
+- FIX smaller eating bigger
 
 Suspended:
 - //Object Pool for food

@@ -3,12 +3,12 @@
 public class CameraMovement : MonoBehaviour {
     public Transform follow;
 
-	void Update () {
+	void FixedUpdate() {
         if (follow != null) {
             Vector3 position = Vector3.Lerp(
                 transform.position,
                 follow.position,
-                Time.deltaTime
+                2 * Time.deltaTime
             );
             position.z = -10f;
             transform.position = position;

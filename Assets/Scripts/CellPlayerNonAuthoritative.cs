@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NetworkView))]
@@ -12,17 +13,19 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     Collider2D theCollider2D;
 
     // Networking synchronization
-    //bool networkInitialized = false;
-    //Vector3 syncPosition;
+    bool netInitialized = false;
+    float lastSyncTime = 0f;
+    float syncDelay = 0f;
+    float syncTime = 0f;
+    Vector3 syncStartPosition = Vector3.zero;
+    Vector3 syncEndPosition = Vector3.zero;
 
     void Awake() {
         theNetworkView = GetComponent<NetworkView>();
         theRigidbody2D = GetComponent<Rigidbody2D>();
         theCollider2D = GetComponent<Collider2D>();
         theSize = GetComponent<Size>();
-    }
 
-    void Start() {
         if (theNetworkView.isMine) {
             Camera.main.GetComponent<CameraMovement>().follow = this.transform;
         }
@@ -30,9 +33,12 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
         theSize.OnGetEaten = OnGetEaten;
     }
 
+    void Start() {
+    }
+
     void OnEnable() {
-        float x = NetworkManager.arenaSize.x;
-        float y = NetworkManager.arenaSize.y;
+        float x = NetworkManager.instance.arenaSize.x;
+        float y = NetworkManager.instance.arenaSize.y;
 
         float r = (transform.position.x + x) / (2 * x);
         float g = (transform.position.y + y) / (2 * y);
@@ -47,17 +53,28 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     }
 
     void Update() {
+    }
+
+	void FixedUpdate () {
+        if (theNetworkView.isMine) {
+            theSize.Decay();
+            InputMovement();
+        } else {
+            SyncMovement();
+        }
+
         float scale = 2 * Mathf.Sqrt(theSize.GetSize() / Mathf.PI);
         transform.localScale = new Vector3(scale, scale);
-        velocity = 5f / Mathf.Log(theSize.GetSize() / 2f, 5f);
+
+        velocity = 8f / Mathf.Log(theSize.GetSize() / 2f, 5f);
 
         Vector3 position = transform.position;
         position.z = -0.001f * scale;
 
         // Clamp inside arena
         Vector2 arenaHalfSize = new Vector2(
-            NetworkManager.arenaSize.x / 2 - theCollider2D.bounds.extents.x,
-            NetworkManager.arenaSize.y / 2 - theCollider2D.bounds.extents.y);
+        NetworkManager.instance.arenaSize.x / 2 - theCollider2D.bounds.extents.x,
+        NetworkManager.instance.arenaSize.y / 2 - theCollider2D.bounds.extents.y);
         Vector2 vel = theRigidbody2D.velocity;
         if (position.x < -arenaHalfSize.x) {
             position.x = -arenaHalfSize.x;
@@ -77,16 +94,6 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
 
         transform.position = position;
         theRigidbody2D.velocity = vel;
-    }
-
-	void FixedUpdate () {
-        theSize.Decay();
-
-        if (theNetworkView.isMine) {
-            InputMovement();
-        } else {
-            SyncMovement();
-        }
 	}
 
     void InputMovement() {
@@ -104,7 +111,8 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     }
 
     void SyncMovement() {
-        
+        syncTime += Time.fixedDeltaTime;
+        theRigidbody2D.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
     }
 
     void OnTriggerStay2D(Collider2D col) {
@@ -113,7 +121,8 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
             float deltaSize = theSize.GetSize() - colSizeComponent.GetSize();
             if (deltaSize > 0f) {
                 float proportionalDeltaSize = deltaSize / theSize.GetSize();
-                if (proportionalDeltaSize > 0.05f) {
+                //if (proportionalDeltaSize > 0.05f) {
+                {
                     float sqrDist = (col.transform.position - transform.position).sqrMagnitude;
                     float deltaRadius = theCollider2D.bounds.extents.x - col.bounds.extents.x;
 
@@ -129,26 +138,40 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
         Vector3 syncPosition = Vector3.zero;
         Vector3 syncVelocity = Vector3.zero;
-        float syncSize = 0f;
         if (stream.isWriting) {
             syncPosition = theRigidbody2D.position;
             syncVelocity = theRigidbody2D.velocity;
-            syncSize = theSize.GetSize();
 
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncVelocity);
-            stream.Serialize(ref syncSize);
         } else {
             stream.Serialize(ref syncPosition);
             stream.Serialize(ref syncVelocity);
-            stream.Serialize(ref syncSize);
 
-            theRigidbody2D.position = syncPosition;
-            theSize.size = syncSize;
+            syncTime = 0f;
+            if (!netInitialized) {
+                theRigidbody2D.position = syncPosition;
+                theRigidbody2D.velocity = syncVelocity;
+
+                syncDelay = 1f;
+                syncStartPosition = syncPosition;
+                syncEndPosition = syncPosition;
+                netInitialized = true;
+            } else {
+                syncDelay = Time.time - lastSyncTime;
+
+                syncStartPosition = theRigidbody2D.position + (Vector2)(syncVelocity) * syncDelay;
+                syncEndPosition = syncPosition;
+            }
+            lastSyncTime = Time.time;
         }
     }
 
     void OnGetEaten() {
         Network.Destroy(this.gameObject);
+    }
+
+    public void SetName(string name) {
+        GetComponentInChildren<Text>().text = name;
     }
 }
