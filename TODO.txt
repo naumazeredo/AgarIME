@@ -1,10 +1,17 @@
 High Priority:
-- Object Pool for food
-- RPC create food on all players over net (but dont append NetworkView on food!)
-- Create logic to eat food/other cells
+- UI
+- Camera zoom out with cell size
 
 Middle Priority:
-- 
+- Split/'attack' logic
 
 Low Priority:
+- Client-side prediction / Movement smoothing
+
+Done:
+- Create logic to eat food/other cells OK
 - State Sync of Cells
+
+Suspended:
+- //Object Pool for food
+- //RPC create food on all players over net (but dont append NetworkView on food!)
