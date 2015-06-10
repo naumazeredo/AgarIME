@@ -84,8 +84,12 @@ public class NetworkManager : MonoBehaviour {
     void Update() {
         if (!Network.isClient && !Network.isServer) {
             ShowLoginUI();
+            GameManager.ChangeState(GameManager.GameStates.Login);
         } else {
             HideLoginUI();
+            if (GameManager.State == GameManager.GameStates.Login) {
+                GameManager.ChangeState(GameManager.GameStates.Playing);
+            }
         }
 
         if (connecting && hostList != null && hostList.Length > 0) {
@@ -111,7 +115,6 @@ public class NetworkManager : MonoBehaviour {
     }
 
     void OnServerInitialized() {
-        //Network.Instantiate(food, Vector3.zero, Quaternion.identity, 0);
         connected = true;
     }
 
@@ -143,18 +146,6 @@ public class NetworkManager : MonoBehaviour {
         Network.RemoveRPCs(netplayer);
         Network.DestroyPlayerObjects(netplayer);
     }
-
-    /*
-    void OnGUI() {
-        if (!Network.isClient && !Network.isServer) {
-            if (GUI.Button(new Rect(10, 10, 100, 50), "Start Server"))
-                StartServer();
-
-            if (GUI.Button(new Rect(10, 70, 100, 50), "Connect"))
-                JoinServer();
-        }
-    }
-    */
 
     void CreateFood() {
         Network.Instantiate(

@@ -73,8 +73,10 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
 
     void FixedUpdate() {
         if (theNetworkView.isMine) {
-            InputMovement();
-            ClampPositionToArena();
+            if (GameManager.State == GameManager.GameStates.Playing) {
+                InputMovement();
+                ClampPositionToArena();
+            }
         } else {
             SyncMovement();
         }
@@ -204,11 +206,12 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
 
     [RPC]
     void ChangeName(string name) {
-        GetComponentInChildren<Text>().text = name;
         Sprite customSkin = CustomSkinManager.GetCustomSkin(name);
         if (customSkin != null) {
             SetColor(Color.white);
             GetComponent<SpriteRenderer>().sprite = customSkin;
+        } else {
+            GetComponentInChildren<Text>().text = name;
         }
     }
 }
