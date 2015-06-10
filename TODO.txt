@@ -4,17 +4,17 @@ High Priority:
 
 Middle Priority:
 - Split/'attack' logic
-- Share player/cell name
 - UI
 
 Low Priority:
-- 
+- Create *alot* of custom skins
 
 Done:
 - Create logic to eat food/other cells OK
 - State Sync of Cells
 - FIX smaller eating bigger
 - Client-side prediction
+- Share player/cell name
 
 Suspended:
 - //Object Pool for food
