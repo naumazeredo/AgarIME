@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
     }
 
     public Canvas pauseCanvas;
+    public Canvas highscoreCanvas;
 
 	void Awake() {
         instance = this;
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour {
             case GameStates.Login:
                 break;
             case GameStates.Playing:
+                instance.highscoreCanvas.gameObject.SetActive(false);
                 break;
             case GameStates.Paused:
                 instance.pauseCanvas.gameObject.SetActive(false);
@@ -44,6 +46,7 @@ public class GameManager : MonoBehaviour {
             case GameStates.Login:
                 break;
             case GameStates.Playing:
+                instance.highscoreCanvas.gameObject.SetActive(true);
                 break;
             case GameStates.Paused:
                 instance.pauseCanvas.gameObject.SetActive(true);
