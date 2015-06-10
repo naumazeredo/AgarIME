@@ -1,6 +1,5 @@
 High Priority:
 - Camera zoom out with cell size
-- Client-side prediction
 - FIX disconnecting causing issues!
 
 Middle Priority:
@@ -15,6 +14,7 @@ Done:
 - Create logic to eat food/other cells OK
 - State Sync of Cells
 - FIX smaller eating bigger
+- Client-side prediction
 
 Suspended:
 - //Object Pool for food

@@ -56,7 +56,7 @@ public class NetworkManager : MonoBehaviour {
         if (!ValidateIpAddress())
             return;
         //Network.InitializeServer(32, 25005, !Network.HavePublicAddress());
-        Network.InitializeServer(32, 25005, false);
+        Network.InitializeServer(32, 80, false);
         //MasterServer.dedicatedServer = true;
         MasterServer.RegisterHost(gameTypeName, gameName);
         for (int i = 0; i < foodMaximum; ++i)
