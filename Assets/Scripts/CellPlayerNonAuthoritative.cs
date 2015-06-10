@@ -25,6 +25,9 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     float growTime = 0f;
     static float growTimespan = 0.3f;
 
+    // Custom skins
+    public Sprite skinBalao;
+
     void Awake() {
         theNetworkView = GetComponent<NetworkView>();
         theRigidbody2D = GetComponent<Rigidbody2D>();
@@ -196,12 +199,16 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     }
 
     public void SetName(string name) {
-        GetComponentInChildren<Text>().text = name;
-        theNetworkView.RPC("ChangeName", RPCMode.OthersBuffered, name);
+        theNetworkView.RPC("ChangeName", RPCMode.AllBuffered, name);
     }
 
     [RPC]
     void ChangeName(string name) {
         GetComponentInChildren<Text>().text = name;
+        Sprite customSkin = CustomSkinManager.GetCustomSkin(name);
+        if (customSkin != null) {
+            SetColor(Color.white);
+            GetComponent<SpriteRenderer>().sprite = customSkin;
+        }
     }
 }
