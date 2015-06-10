@@ -6,7 +6,6 @@ public class CustomSkinManager : MonoBehaviour {
 
     [SerializeField] private List<string> skinNames;
     [SerializeField] private List<Sprite> skinSprites;
-    //private Dictionary<string, Sprite> skinDict;
 
     void Awake() {
         instance = this;
@@ -14,7 +13,7 @@ public class CustomSkinManager : MonoBehaviour {
 
     public static Sprite GetCustomSkin(string name) {
         for (int i = 0; i < instance.skinNames.Count; ++i)
-            if (instance.skinNames[i] == name)
+            if (instance.skinNames[i].ToLower() == name.ToLower())
                 return instance.skinSprites[i];
         return null;
     }

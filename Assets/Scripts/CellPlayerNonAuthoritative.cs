@@ -5,12 +5,14 @@ using UnityEngine.UI;
 [RequireComponent(typeof(NetworkView))]
 [RequireComponent(typeof(Size))]
 public class CellPlayerNonAuthoritative : MonoBehaviour {
-    Size theSize;
+    [HideInInspector]
+    public Size theSize;
     float velocity = 5f;
 
     NetworkView theNetworkView;
     Rigidbody2D theRigidbody2D;
     Collider2D theCollider2D;
+    Transform playerContainer;
 
     // Networking
     bool syncInit = false;
@@ -25,14 +27,12 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     float growTime = 0f;
     static float growTimespan = 0.3f;
 
-    // Custom skins
-    public Sprite skinBalao;
-
     void Awake() {
+        theSize = GetComponent<Size>();
         theNetworkView = GetComponent<NetworkView>();
         theRigidbody2D = GetComponent<Rigidbody2D>();
         theCollider2D = GetComponent<Collider2D>();
-        theSize = GetComponent<Size>();
+        playerContainer = GameObject.Find("Player Container").transform;
 
         if (theNetworkView.isMine) {
             Camera.main.GetComponent<CameraMovement>().follow = this.transform;
@@ -40,6 +40,8 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
 
         theSize.OnGetEaten = OnGetEaten;
         theSize.OnEat = OnEat;
+
+        transform.SetParent(playerContainer);
     }
 
     void OnEnable() {
@@ -206,6 +208,7 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
 
     [RPC]
     void ChangeName(string name) {
+        gameObject.name = name;
         Sprite customSkin = CustomSkinManager.GetCustomSkin(name);
         if (customSkin != null) {
             SetColor(Color.white);

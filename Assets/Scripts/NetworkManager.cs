@@ -14,6 +14,9 @@ public class NetworkManager : MonoBehaviour {
     private bool connected = false;
 
     // Game objects
+    private Transform foodContainer;
+    private Transform playerContainer;
+
     public GameObject food;
     public GameObject cell;
 
@@ -35,6 +38,9 @@ public class NetworkManager : MonoBehaviour {
 
     void Awake() {
         instance = this;
+
+        foodContainer = GameObject.Find("Food Container").transform;
+        playerContainer = GameObject.Find("Player Container").transform;
     }
 
     void Start() {
@@ -148,14 +154,28 @@ public class NetworkManager : MonoBehaviour {
     }
 
     void CreateFood() {
-        Network.Instantiate(
+        GameObject newFood = Network.Instantiate(
             food,
             new Vector3(
                 Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
                 Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
                 Random.value),
-            Quaternion.identity, 0);
+            Quaternion.identity, 0) as GameObject;
+        newFood.transform.SetParent(foodContainer);
         foodCount++;
+    }
+
+    void SpawnPlayer() {
+        player = Network.Instantiate(
+            cell,
+            //Vector3.zero,
+            new Vector3(
+                Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
+                Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
+                Random.value),
+            Quaternion.identity, 0) as GameObject;
+        player.GetComponent<CellPlayerNonAuthoritative>().SetName(playerName.text);
+        player.transform.SetParent(playerContainer);
     }
 
     public void ShowLoginUI() {
@@ -177,18 +197,6 @@ public class NetworkManager : MonoBehaviour {
 
     void HideErrorMessage() {
         errorMessage.text = "";
-    }
-
-    void SpawnPlayer() {
-        player = Network.Instantiate(
-            cell,
-            //Vector3.zero,
-            new Vector3(
-                Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
-                Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
-                Random.value),
-            Quaternion.identity, 0) as GameObject;
-        player.GetComponent<CellPlayerNonAuthoritative>().SetName(playerName.text);
     }
 
     public bool ValidateIpAddress() {

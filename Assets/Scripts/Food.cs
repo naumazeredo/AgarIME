@@ -22,8 +22,6 @@ public class Food : MonoBehaviour {
     }
 
     void OnGetEaten() {
-        // TODO(naum): Self pool
-        //Destroy(this.gameObject);
         Network.Destroy(this.gameObject);
         NetworkManager.instance.foodCount--;
     }
