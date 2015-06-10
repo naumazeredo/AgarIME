@@ -23,7 +23,7 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     float lastSize = 0f;
     float size = 0f;
     float growTime = 0f;
-    static float growTimespan = 5f;
+    static float growTimespan = 0.3f;
 
     void Awake() {
         theNetworkView = GetComponent<NetworkView>();
@@ -196,6 +196,12 @@ public class CellPlayerNonAuthoritative : MonoBehaviour {
     }
 
     public void SetName(string name) {
+        GetComponentInChildren<Text>().text = name;
+        theNetworkView.RPC("ChangeName", RPCMode.OthersBuffered, name);
+    }
+
+    [RPC]
+    void ChangeName(string name) {
         GetComponentInChildren<Text>().text = name;
     }
 }
