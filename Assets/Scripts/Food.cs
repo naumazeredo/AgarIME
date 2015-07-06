@@ -7,8 +7,8 @@ public class Food : MonoBehaviour {
     }
 
     void OnEnable() {
-        float x = NetworkManager.instance.arenaSize.x;
-        float y = NetworkManager.instance.arenaSize.y;
+        float x = Networking.instance.arenaSize.x;
+        float y = Networking.instance.arenaSize.y;
         float r = (transform.position.x + x) / (2 * x);
         float g = (transform.position.y + y) / (2 * y);
         float b = transform.position.z;
@@ -22,7 +22,7 @@ public class Food : MonoBehaviour {
     }
 
     void OnGetEaten() {
-        Network.Destroy(this.gameObject);
-        NetworkManager.instance.foodCount--;
+        //Network.Destroy(this.gameObject);
+        Networking.instance.foodCount--;
     }
 }

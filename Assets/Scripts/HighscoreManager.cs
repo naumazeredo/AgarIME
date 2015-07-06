@@ -7,7 +7,7 @@ public class HighscoreManager : MonoBehaviour {
     public Transform listTransform;
     Text[] players = new Text[10];
 
-    private CellPlayerNonAuthoritative[] cells;
+    private CellMovement[] cells;
 
     void Awake() {
         for (int i = 0; i < 10; ++i) {
@@ -15,6 +15,7 @@ public class HighscoreManager : MonoBehaviour {
         }
     }
 
+    /*
 	void Update () {
         cells = FindObjectsOfType<CellPlayerNonAuthoritative>();
         Array.Sort<CellPlayerNonAuthoritative>(cells, (x, y) => y.theSize.GetSize().CompareTo(x.theSize.GetSize()));
@@ -23,4 +24,5 @@ public class HighscoreManager : MonoBehaviour {
             players[i].text = (i < cells.Length) ? (i+1).ToString() + ". " + cells[i].name : "";
         }
 	}
+    */
 }

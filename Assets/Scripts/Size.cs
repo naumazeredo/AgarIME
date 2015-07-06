@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
-[RequireComponent(typeof(CircleCollider2D))]
-public class Size : MonoBehaviour {
+public class Size : NetworkBehaviour {
     [SerializeField]
+    [SyncVar]
     float size = 1f;
+
+    public static float minimumCellSize = 10f;
 
     public float GetSize() {
         return size;
@@ -17,26 +20,19 @@ public class Size : MonoBehaviour {
 
     public void Decay() {
         size -= 0.001f * size * Time.deltaTime;
-        if (size < 10f)
-            size = 10f;
+        if (size < minimumCellSize)
+            size = minimumCellSize;
     }
 
     public void Eat(Size eaten) {
-        size += eaten.size;
-        if (OnEat != null)
-            OnEat();
-        if (eaten.OnGetEaten != null)
-            eaten.OnGetEaten();
+        RpcGrow(eaten.size);
+
+        OnEat();
+        eaten.OnGetEaten();
     }
 
-    void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
-        float syncSize = 0f;
-        if (stream.isWriting) {
-            syncSize = size;
-            stream.Serialize(ref syncSize);
-        } else {
-            stream.Serialize(ref syncSize);
-            size = syncSize;
-        }
+    [ClientRpc]
+    public void RpcGrow(float grow) {
+        size += grow;
     }
 }

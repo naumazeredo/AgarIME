@@ -1,26 +1,25 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Net;
+using UnityEngine.Networking;
 
-public class NetworkManager : MonoBehaviour {
-    static public NetworkManager instance;
+public class Networking : NetworkManager {
+    static public Networking instance;
 
-    //public string ipAddress = "127.0.0.1";
-
+    /*
     private const string gameTypeName = "AgarIMEio";
     private const string gameName = "RoomIME";
     private HostData[] hostList;
+    */
     private bool connecting = false;
     private bool connected = false;
 
     // Game objects
     private Transform foodContainer;
-    private Transform playerContainer;
 
     public GameObject food;
-    public GameObject cell;
+    //public GameObject cell;
 
-    private GameObject player = null;
+    public GameObject player;
 
     // Arena
     public Vector2 arenaSize = new Vector2(80f, 80f);
@@ -28,7 +27,8 @@ public class NetworkManager : MonoBehaviour {
     // Food managing
     public int foodMaximum = 400;
     public int foodCount = 0;
-    private float timer = 0f;
+    private float foodTimer = 0f;
+    public float foodRespawnTime = 5f;
 
     // UI
     public Canvas loginCanvas;
@@ -40,9 +40,103 @@ public class NetworkManager : MonoBehaviour {
         instance = this;
 
         foodContainer = GameObject.Find("Food Container").transform;
-        playerContainer = GameObject.Find("Player Container").transform;
     }
 
+    public override void OnServerConnect(NetworkConnection conn) {
+        Debug.Log("OnServerConnect: " + conn.connectionId);
+        base.OnServerConnect(conn);
+    }
+
+    public override void OnServerDisconnect(NetworkConnection conn) {
+        print("OnServerDisconnect: " + conn.connectionId);
+        base.OnServerDisconnect(conn);
+    }
+
+    public override void OnServerReady(NetworkConnection conn) {
+        print("OnServerReady: " + conn.connectionId);
+        base.OnServerReady(conn);
+    }
+
+    public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId) {
+        print("OnServerAddPlayer (" + conn.connectionId + "): " + playerControllerId);
+        //base.OnServerAddPlayer(conn, playerControllerId);
+
+        player = (GameObject) Instantiate(
+            playerPrefab,
+            new Vector3(
+                Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
+                Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
+                Random.value),
+            Quaternion.identity);
+        player.GetComponent<CellMovement>().cellName = playerName.text;
+        player.GetComponent<CellMovement>().Recolor();
+
+        NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+    }
+
+    public override void OnServerRemovePlayer(NetworkConnection conn, PlayerController player) {
+        print("OnServerRemovePlayer(" + conn.connectionId + "): " + player);
+        base.OnServerRemovePlayer(conn, player);
+    }
+
+    public override void OnServerError(NetworkConnection conn, int errorCode) {
+        print("OnServerError(" + conn.connectionId + "): " + errorCode);
+        base.OnServerError(conn, errorCode);
+    }
+
+    public override void OnClientConnect(NetworkConnection conn) {
+        print("OnClientConnect: " + conn.connectionId);
+        base.OnClientConnect(conn);
+        connected = true;
+    }
+
+    public override void OnClientDisconnect(NetworkConnection conn) {
+        print("OnClientDisconnect: " + conn.connectionId);
+        base.OnClientDisconnect(conn);
+    }
+
+    public override void OnStartClient(NetworkClient client) {
+        print("OnStartClient: " + client);
+        base.OnStartClient(client);
+    }
+
+    void Update() {
+        if (connected && Input.GetKeyDown(KeyCode.Space) && player == null) {
+            ClientScene.AddPlayer(0);
+        }
+    }
+
+    /*
+    public void SpawnPlayer(int connectionId) {
+        player = (GameObject) Instantiate(
+            playerPrefab,
+            new Vector3(
+                Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
+                Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
+                Random.value),
+            Quaternion.identity);
+        player.GetComponent<CellMovement>().SetName(playerName.text);
+        player.transform.SetParent(playerContainer);
+
+        foreach (var c in NetworkServer.connections) {
+            Debug.Log(c.connectionId);
+            if (c.connectionId == connectionId) {
+                NetworkServer.AddPlayerForConnection(c, player, 0);
+                return;
+            }
+        }
+
+        foreach (var c in NetworkServer.localConnections) {
+            Debug.Log(c.connectionId);
+            if (c.connectionId == connectionId) {
+                NetworkServer.AddPlayerForConnection(c, player, 0);
+                return;
+            }
+        }
+    }
+    */
+
+    /*
     void Start() {
         // TODO(naum): Don't use this!
         //ChangeServerIpAddress("127.0.0.1");
@@ -209,4 +303,5 @@ public class NetworkManager : MonoBehaviour {
         }
         return valid;
     }
+    */
 }
