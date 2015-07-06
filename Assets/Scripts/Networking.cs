@@ -16,7 +16,7 @@ public class Networking : NetworkManager {
     // Game objects
     private Transform foodContainer;
 
-    public GameObject food;
+    //public GameObject food;
     //public GameObject cell;
 
     public GameObject player;
@@ -61,17 +61,17 @@ public class Networking : NetworkManager {
         print("OnServerAddPlayer (" + conn.connectionId + "): " + playerControllerId);
         //base.OnServerAddPlayer(conn, playerControllerId);
 
-        player = (GameObject) Instantiate(
+        GameObject newplayer = (GameObject) Instantiate(
             playerPrefab,
             new Vector3(
                 Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
                 Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
                 Random.value),
             Quaternion.identity);
-        player.GetComponent<CellMovement>().cellName = playerName.text;
-        player.GetComponent<CellMovement>().Recolor();
+        newplayer.GetComponent<CellMovement>().cellName = playerName.text;
+        newplayer.GetComponent<CellMovement>().Recolor();
 
-        NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+        NetworkServer.AddPlayerForConnection(conn, newplayer, playerControllerId);
     }
 
     public override void OnServerRemovePlayer(NetworkConnection conn, PlayerController player) {
@@ -101,40 +101,39 @@ public class Networking : NetworkManager {
     }
 
     void Update() {
+        if (NetworkServer.active) {
+            foodTimer += Time.deltaTime;
+            if (foodTimer >= foodRespawnTime) {
+                GameManager.instance.CmdRespawnFood();
+                foodTimer = 0f;
+            }
+        } else {
+            foodCount = 0;
+        }
+
         if (connected && Input.GetKeyDown(KeyCode.Space) && player == null) {
             ClientScene.AddPlayer(0);
         }
     }
 
-    /*
-    public void SpawnPlayer(int connectionId) {
-        player = (GameObject) Instantiate(
-            playerPrefab,
+    public void RespawnFood() {
+        // TODO(naum): Object pool
+        for (int i = foodCount; i < foodMaximum; ++i)
+            CreateFood();
+    }
+
+    void CreateFood() {
+        GameObject newFood = (GameObject) Instantiate(
+            spawnPrefabs[0],
             new Vector3(
                 Random.Range(-arenaSize.x / 2, arenaSize.x / 2),
                 Random.Range(-arenaSize.y / 2, arenaSize.y / 2),
                 Random.value),
             Quaternion.identity);
-        player.GetComponent<CellMovement>().SetName(playerName.text);
-        player.transform.SetParent(playerContainer);
-
-        foreach (var c in NetworkServer.connections) {
-            Debug.Log(c.connectionId);
-            if (c.connectionId == connectionId) {
-                NetworkServer.AddPlayerForConnection(c, player, 0);
-                return;
-            }
-        }
-
-        foreach (var c in NetworkServer.localConnections) {
-            Debug.Log(c.connectionId);
-            if (c.connectionId == connectionId) {
-                NetworkServer.AddPlayerForConnection(c, player, 0);
-                return;
-            }
-        }
+        newFood.transform.SetParent(foodContainer);
+        foodCount++;
+        NetworkServer.Spawn(newFood);
     }
-    */
 
     /*
     void Start() {

@@ -13,12 +13,14 @@ public class CellMovement : NetworkBehaviour {
     [SyncVar]
     public Color color;
 
+    Collider2D theCollider2D;
     Rigidbody2D theRigidbody2D;
     Size theSize;
 
     Transform playerContainer;
 
     void Awake() {
+        theCollider2D = GetComponent<Collider2D>();
         theRigidbody2D = GetComponent<Rigidbody2D>();
         theSize = GetComponent<Size>();
 
@@ -37,6 +39,8 @@ public class CellMovement : NetworkBehaviour {
         Debug.Log("OnStartLocalPlayer");
 
         Camera.main.GetComponent<CameraMovement>().follow = this.transform;
+
+        Networking.instance.player = this.gameObject;
     }
 
 
@@ -67,9 +71,8 @@ public class CellMovement : NetworkBehaviour {
         theRigidbody2D.AddForce(dir.normalized * velocity);
     }
 
-    /*
     void ClampPositionToArena() {
-        Vector3 position = transform.position;
+        Vector3 position = theRigidbody2D.position;
         Vector2 arenaHalfSize = new Vector2(
                 Networking.instance.arenaSize.x / 2 - theCollider2D.bounds.extents.x,
                 Networking.instance.arenaSize.y / 2 - theCollider2D.bounds.extents.y);
@@ -90,14 +93,12 @@ public class CellMovement : NetworkBehaviour {
             vel.y = 0f;
         }
 
-        transform.position = position;
+        theRigidbody2D.position = position;
         theRigidbody2D.velocity = vel;
     }
-    */
 
     public void SetName() {
         gameObject.name = cellName;
-        Debug.Log("SetName: " + cellName);
 
         /*
         Sprite customSkin = CustomSkinManager.GetCustomSkin(name);

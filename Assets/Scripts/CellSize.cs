@@ -24,8 +24,8 @@ public class CellSize : NetworkBehaviour {
         theSize = GetComponent<Size>();
         theCollider2D = GetComponent<Collider2D>();
 
-        theSize.OnGetEaten = OnGetEaten;
-        theSize.OnEat = RpcOnEat;
+        theSize.OnGetEaten += CmdGetEaten;
+        //theSize.OnEat += RpcOnEat;
     }
 	
 	void Update () {
@@ -54,14 +54,17 @@ public class CellSize : NetworkBehaviour {
         transform.localScale = new Vector3(scale, scale);
     }
 
-    void OnGetEaten() {
+    [Command]
+    void CmdGetEaten() {
         NetworkServer.Destroy(this.gameObject);
     }
 
+    /*
     [ClientRpc]
     void RpcOnEat() {
         growTime = 0f;
     }
+    */
 
     void OnTriggerStay2D(Collider2D col) {
         // Only allow eating on server

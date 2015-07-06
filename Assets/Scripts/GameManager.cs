@@ -75,4 +75,10 @@ public class GameManager : NetworkBehaviour {
                 break;
         }
     }
+
+    [Command]
+    public void CmdRespawnFood() {
+        if (NetworkServer.active)
+            Networking.instance.RespawnFood();
+    }
 }

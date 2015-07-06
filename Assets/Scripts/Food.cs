@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(Size))]
-public class Food : MonoBehaviour {
+public class Food : NetworkBehaviour {
     void Start() {
-        GetComponent<Size>().OnGetEaten = OnGetEaten;
+        GetComponent<Size>().OnGetEaten += CmdGetEaten;
     }
 
     void OnEnable() {
@@ -21,8 +22,10 @@ public class Food : MonoBehaviour {
         GetComponent<SpriteRenderer>().color = color;
     }
 
-    void OnGetEaten() {
+    [Command]
+    void CmdGetEaten() {
         //Network.Destroy(this.gameObject);
+        NetworkServer.Destroy(this.gameObject);
         Networking.instance.foodCount--;
     }
 }

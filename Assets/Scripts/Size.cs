@@ -13,10 +13,10 @@ public class Size : NetworkBehaviour {
     }
 
     public delegate void GetEatenDelegate();
-    public GetEatenDelegate OnGetEaten;
+    public event GetEatenDelegate OnGetEaten;
 
     public delegate void EatDelegate();
-    public EatDelegate OnEat;
+    public event EatDelegate OnEat;
 
     public void Decay() {
         size -= 0.001f * size * Time.deltaTime;
@@ -25,14 +25,14 @@ public class Size : NetworkBehaviour {
     }
 
     public void Eat(Size eaten) {
-        RpcGrow(eaten.size);
-
-        OnEat();
-        eaten.OnGetEaten();
+        Grow(eaten.size);
+        if (OnEat != null)
+            OnEat();
+        if (eaten.OnGetEaten != null)
+            eaten.OnGetEaten();
     }
 
-    [ClientRpc]
-    public void RpcGrow(float grow) {
+    public void Grow(float grow) {
         size += grow;
     }
 }
